@@ -1,13 +1,391 @@
-//SPDX-License-Identifier: Unlicense
-pragma solidity ^0.8.0;
+//SPDX-License-Identifier: MIT
+
+pragma solidity ^0.8.7;
 pragma abicoder v2;
+pragma experimental ABIEncoderV2;
+
 
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/utils/SafeERC20.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/access/Ownable.sol";
 import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/structs/EnumerableSet.sol";
-import 'hardhat/console.sol';
+import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
+import "hardhat/console.sol";
 
+
+// File: contracts\open-zeppelin-contracts\SafeMathCopy.sol
+
+library SafeMathCopy { // To avoid namespace collision between openzeppelin safemath and uniswap safemath
+
+    /**
+     * @dev Returns the addition of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `+` operator.
+     *
+     * Requirements:
+     *
+     * - Addition cannot overflow.
+     */
+    function add(uint256 a, uint256 b) internal pure returns(uint256) {
+        uint256 c = a + b;
+        require(c >= a, "SafeMath: addition overflow");
+        return c;
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b) internal pure returns(uint256) {
+        return sub(a, b, "SafeMath: subtraction overflow");
+    }
+
+    /**
+     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
+     * overflow (when the result is negative).
+     *
+     * Counterpart to Solidity's `-` operator.
+     *
+     * Requirements:
+     *
+     * - Subtraction cannot overflow.
+     */
+    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns(uint256) {
+        require(b <= a, errorMessage);
+        uint256 c = a - b;
+        return c;
+    }
+
+    /**
+     * @dev Returns the multiplication of two unsigned integers, reverting on
+     * overflow.
+     *
+     * Counterpart to Solidity's `*` operator.
+     *
+     * Requirements:
+     *
+     * - Multiplication cannot overflow.
+     */
+    function mul(uint256 a, uint256 b) internal pure returns(uint256) {
+        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
+        // benefit is lost if 'b' is also tested.
+        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
+        if (a == 0) {
+            return 0;
+        }
+        uint256 c = a * b;
+        require(c / a == b, "SafeMath: multiplication overflow");
+        return c;
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b) internal pure returns(uint256) {
+        return div(a, b, "SafeMath: division by zero");
+    }
+
+    /**
+     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
+     * division by zero. The result is rounded towards zero.
+     *
+     * Counterpart to Solidity's `/` operator. Note: this function uses a
+     * `revert` opcode (which leaves remaining gas untouched) while Solidity
+     * uses an invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns(uint256) {
+        require(b > 0, errorMessage);
+        uint256 c = a / b;
+        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+        return c;
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b) internal pure returns(uint256) {
+        return mod(a, b, "SafeMath: modulo by zero");
+    }
+
+    /**
+     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
+     * Reverts with custom message when dividing by zero.
+     *
+     * Counterpart to Solidity's `%` operator. This function uses a `revert`
+     * opcode (which leaves remaining gas untouched) while Solidity uses an
+     * invalid opcode to revert (consuming all remaining gas).
+     *
+     * Requirements:
+     *
+     * - The divisor cannot be zero.
+     */
+    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns(uint256) {
+        require(b != 0, errorMessage);
+        return a % b;
+    }
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\SafeMath.sol
+
+library SafeMath {
+
+    function add(uint x, uint y) internal pure returns(uint z) {
+        require((z = x + y) >= x, 'ds-math-add-overflow');
+    }
+
+    function sub(uint x, uint y) internal pure returns(uint z) {
+        require((z = x - y) <= x, 'ds-math-sub-underflow');
+    }
+
+    function mul(uint x, uint y) internal pure returns(uint z) {
+        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
+    }
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\Decimal.sol
+
+library Decimal {
+
+    using SafeMathCopy for uint256;
+
+    // ============ Constants ============
+
+    uint256 private constant BASE = 10 ** 18;
+
+    // ============ Structs ============
+
+    struct D256 {
+        uint256 value;
+    }
+
+    // ============ Static Functions ============
+
+    function zero() internal pure returns(D256 memory) {
+        return D256({
+            value: 0
+        });
+    }
+
+    function one() internal pure returns(D256 memory) {
+        return D256({
+            value: BASE
+        });
+    }
+
+    function from(uint256 a) internal pure returns(D256 memory) {
+        return D256({
+            value: a.mul(BASE)
+        });
+    }
+
+    function ratio(uint256 a, uint256 b) internal pure returns(D256 memory) {
+        return D256({
+            value: getPartial(a, BASE, b)
+        });
+    }
+
+    // ============ Self Functions ============
+
+    function add(D256 memory self, uint256 b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.add(b.mul(BASE))
+        });
+    }
+
+    function sub(D256 memory self, uint256 b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.sub(b.mul(BASE))
+        });
+    }
+
+    function sub(D256 memory self, uint256 b, string memory reason) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.sub(b.mul(BASE), reason)
+        });
+    }
+
+    function mul(D256 memory self, uint256 b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.mul(b)
+        });
+    }
+
+    function div(D256 memory self, uint256 b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.div(b)
+        });
+    }
+
+    function pow(D256 memory self, uint256 b) internal pure returns(D256 memory) {
+        if (b == 0) {
+            return from(1);
+        }
+        D256 memory temp = D256({
+            value: self.value
+        });
+        for (uint256 i = 1; i < b; i++) {
+            temp = mul(temp, self);
+        }
+        return temp;
+    }
+
+    function add(D256 memory self, D256 memory b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.add(b.value)
+        });
+    }
+
+    function sub(D256 memory self, D256 memory b) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.sub(b.value)
+        });
+    }
+
+    function sub(D256 memory self, D256 memory b, string memory reason) internal pure returns(D256 memory) {
+        return D256({
+            value: self.value.sub(b.value, reason)
+        });
+    }
+
+    function mul(D256 memory self, D256 memory b) internal pure returns(D256 memory) {
+        return D256({
+            value: getPartial(self.value, b.value, BASE)
+        });
+    }
+
+    function div(D256 memory self, D256 memory b) internal pure returns(D256 memory) {
+        return D256({
+            value: getPartial(self.value, BASE, b.value)
+        });
+    }
+
+    function equals(D256 memory self, D256 memory b) internal pure returns(bool) {
+        return self.value == b.value;
+    }
+
+    function greaterThan(D256 memory self, D256 memory b) internal pure returns(bool) {
+        return compareTo(self, b) == 2;
+    }
+
+    function lessThan(D256 memory self, D256 memory b) internal pure returns(bool) {
+        return compareTo(self, b) == 0;
+    }
+
+    function greaterThanOrEqualTo(D256 memory self, D256 memory b) internal pure returns(bool) {
+        return compareTo(self, b) > 0;
+    }
+
+    function lessThanOrEqualTo(D256 memory self, D256 memory b) internal pure returns(bool) {
+        return compareTo(self, b) < 2;
+    }
+
+    function isZero(D256 memory self) internal pure returns(bool) {
+        return self.value == 0;
+    }
+
+    function asUint256(D256 memory self) internal pure returns(uint256) {
+        return self.value.div(BASE);
+    }
+
+    // ============ Core Methods ============
+
+    function getPartial(uint256 target, uint256 numerator, uint256 denominator) private pure returns(uint256) {
+        return target.mul(numerator).div(denominator);
+    }
+
+    function compareTo(D256 memory a, D256 memory b) private pure returns(uint256) {
+        if (a.value == b.value) {
+            return 1;
+        }
+        return a.value > b.value ? 2 : 0;
+    }
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\TestERC20.sol
+
+contract TestERC20 is ERC20PresetMinterPauser {
+
+    constructor(string memory name, string memory symbol) ERC20PresetMinterPauser(name, symbol) {}
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\IWETH.sol
+
+interface IWETH {
+
+    function deposit() external payable;
+
+    function transfer(address to, uint value) external returns(bool);
+
+    function withdraw(uint) external;
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\IUniswapV2Pair.sol
+
+interface IUniswapV2Pair {
+
+    function factory() external view returns(address);
+
+    function token0() external view returns(address);
+
+    function token1() external view returns(address);
+
+    function getReserves() external view returns(uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
+
+    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external;
+
+    function skim(address to) external;
+
+    function sync() external;
+
+}
+
+
+// File: contracts\open-zeppelin-contracts\IUniswapV2Callee.sol
+
+interface IUniswapV2Callee {
+
+    function uniswapV2Call(address sender, uint256 amount0, uint256 amount1, bytes calldata data) external;
+
+}
 
 struct OrderedReserves {
     uint256 a1; // base asset
@@ -34,7 +412,11 @@ struct CallbackData {
     uint256 debtTokenOutAmount;
 }
 
+
+// File: contracts\open-zeppelin-contracts\FlashBot.sol
+
 contract FlashBot is Ownable {
+
     using Decimal for Decimal.D256;
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
@@ -63,8 +445,8 @@ contract FlashBot is Ownable {
 
     /// @dev Redirect uniswap callback function
     /// The callback function on different DEX are not same, so use a fallback to redirect to uniswapV2Call
-    fallback(bytes calldata _input) external returns (bytes memory) {
-        (address sender, uint256 amount0, uint256 amount1, bytes memory data) = abi.decode(_input[4:], (address, uint256, uint256, bytes));
+    fallback(bytes calldata _input) external returns(bytes memory) {
+        (address sender, uint256 amount0, uint256 amount1, bytes memory data) = abi.decode(_input[4: ], (address, uint256, uint256, bytes));
         uniswapV2Call(sender, amount0, amount1, data);
     }
 
@@ -74,7 +456,6 @@ contract FlashBot is Ownable {
             payable(owner()).transfer(balance);
             emit Withdrawn(owner(), balance);
         }
-
         for (uint256 i = 0; i < baseTokens.length(); i++) {
             address token = baseTokens.at(i);
             balance = IERC20(token).balanceOf(address(this));
@@ -100,7 +481,7 @@ contract FlashBot is Ownable {
         emit BaseTokenRemoved(token);
     }
 
-    function getBaseTokens() external view returns (address[] memory tokens) {
+    function getBaseTokens() external view returns(address[] memory tokens) {
         uint256 length = baseTokens.length();
         tokens = new address[](length);
         for (uint256 i = 0; i < length; i++) {
@@ -108,54 +489,33 @@ contract FlashBot is Ownable {
         }
     }
 
-    function baseTokensContains(address token) public view returns (bool) {
+    function baseTokensContains(address token) public view returns(bool) {
         return baseTokens.contains(token);
     }
 
-    function isbaseTokenSmaller(address pool0, address pool1)
-        internal
-        view
-        returns (
-            bool baseSmaller,
-            address baseToken,
-            address quoteToken
-        )
-    {
+    function isbaseTokenSmaller(address pool0, address pool1) internal view returns(bool baseSmaller, address baseToken, address quoteToken) {
         require(pool0 != pool1, 'Same pair address');
         (address pool0Token0, address pool0Token1) = (IUniswapV2Pair(pool0).token0(), IUniswapV2Pair(pool0).token1());
         (address pool1Token0, address pool1Token1) = (IUniswapV2Pair(pool1).token0(), IUniswapV2Pair(pool1).token1());
         require(pool0Token0 < pool0Token1 && pool1Token0 < pool1Token1, 'Non standard uniswap AMM pair');
         require(pool0Token0 == pool1Token0 && pool0Token1 == pool1Token1, 'Require same token pair');
         require(baseTokensContains(pool0Token0) || baseTokensContains(pool0Token1), 'No base token in pair');
-
-        (baseSmaller, baseToken, quoteToken) = baseTokensContains(pool0Token0)
-            ? (true, pool0Token0, pool0Token1)
-            : (false, pool0Token1, pool0Token0);
+        (baseSmaller, baseToken, quoteToken) = baseTokensContains(pool0Token0) ?
+            (true, pool0Token0, pool0Token1) :
+            (false, pool0Token1, pool0Token0);
     }
 
     /// @dev Compare price denominated in quote token between two pools
     /// We borrow base token by using flash swap from lower price pool and sell them to higher price pool
-    function getOrderedReserves(
-        address pool0,
-        address pool1,
-        bool baseTokenSmaller
-    )
-        internal
-        view
-        returns (
-            address lowerPool,
-            address higherPool,
-            OrderedReserves memory orderedReserves
-        )
-    {
+    function getOrderedReserves(address pool0, address pool1, bool baseTokenSmaller) internal view returns(address lowerPool, address higherPool, OrderedReserves memory orderedReserves) {
         (uint256 pool0Reserve0, uint256 pool0Reserve1, ) = IUniswapV2Pair(pool0).getReserves();
         (uint256 pool1Reserve0, uint256 pool1Reserve1, ) = IUniswapV2Pair(pool1).getReserves();
-
         // Calculate the price denominated in quote asset token
         (Decimal.D256 memory price0, Decimal.D256 memory price1) =
-            baseTokenSmaller
-                ? (Decimal.from(pool0Reserve0).div(pool0Reserve1), Decimal.from(pool1Reserve0).div(pool1Reserve1))
-                : (Decimal.from(pool0Reserve1).div(pool0Reserve0), Decimal.from(pool1Reserve1).div(pool1Reserve0));
+        baseTokenSmaller
+            ?
+            (Decimal.from(pool0Reserve0).div(pool0Reserve1), Decimal.from(pool1Reserve0).div(pool1Reserve1)) :
+            (Decimal.from(pool0Reserve1).div(pool0Reserve0), Decimal.from(pool1Reserve1).div(pool1Reserve0));
 
         // get a1, b1, a2, b2 with following rule:
         // 1. (a1, b1) represents the pool with lower price, denominated in quote asset token
@@ -163,13 +523,15 @@ contract FlashBot is Ownable {
         if (price0.lessThan(price1)) {
             (lowerPool, higherPool) = (pool0, pool1);
             (orderedReserves.a1, orderedReserves.b1, orderedReserves.a2, orderedReserves.b2) = baseTokenSmaller
-                ? (pool0Reserve0, pool0Reserve1, pool1Reserve0, pool1Reserve1)
-                : (pool0Reserve1, pool0Reserve0, pool1Reserve1, pool1Reserve0);
+                ?
+                (pool0Reserve0, pool0Reserve1, pool1Reserve0, pool1Reserve1) :
+                (pool0Reserve1, pool0Reserve0, pool1Reserve1, pool1Reserve0);
         } else {
             (lowerPool, higherPool) = (pool1, pool0);
             (orderedReserves.a1, orderedReserves.b1, orderedReserves.a2, orderedReserves.b2) = baseTokenSmaller
-                ? (pool1Reserve0, pool1Reserve1, pool0Reserve0, pool0Reserve1)
-                : (pool1Reserve1, pool1Reserve0, pool0Reserve1, pool0Reserve0);
+                ?
+                (pool1Reserve0, pool1Reserve1, pool0Reserve0, pool0Reserve1) :
+                (pool1Reserve1, pool1Reserve0, pool0Reserve1, pool0Reserve0);
         }
         console.log('Borrow from pool:', lowerPool);
         console.log('Sell to pool:', higherPool);
@@ -180,27 +542,22 @@ contract FlashBot is Ownable {
     function flashArbitrage(address pool0, address pool1) external {
         ArbitrageInfo memory info;
         (info.baseTokenSmaller, info.baseToken, info.quoteToken) = isbaseTokenSmaller(pool0, pool1);
-
         OrderedReserves memory orderedReserves;
         (info.lowerPool, info.higherPool, orderedReserves) = getOrderedReserves(pool0, pool1, info.baseTokenSmaller);
-
         // this must be updated every transaction for callback origin authentication
         permissionedPairAddress = info.lowerPool;
-
         uint256 balanceBefore = IERC20(info.baseToken).balanceOf(address(this));
-
         // avoid stack too deep error
         {
             uint256 borrowAmount = calcBorrowAmount(orderedReserves);
             (uint256 amount0Out, uint256 amount1Out) =
-                info.baseTokenSmaller ? (uint256(0), borrowAmount) : (borrowAmount, uint256(0));
+            info.baseTokenSmaller ? (uint256(0), borrowAmount) : (borrowAmount, uint256(0));
             // borrow quote token on lower price pool, calculate how much debt we need to pay demoninated in base token
             uint256 debtAmount = getAmountIn(borrowAmount, orderedReserves.a1, orderedReserves.b1);
             // sell borrowed quote token on higher price pool, calculate how much base token we can get
             uint256 baseTokenOutAmount = getAmountOut(borrowAmount, orderedReserves.b2, orderedReserves.a2);
             require(baseTokenOutAmount > debtAmount, 'Arbitrage fail, no profit');
             console.log('Profit:', (baseTokenOutAmount - debtAmount) / 1 ether);
-
             // can only initialize this way to avoid stack too deep error
             CallbackData memory callbackData;
             callbackData.debtPool = info.lowerPool;
@@ -210,49 +567,35 @@ contract FlashBot is Ownable {
             callbackData.debtToken = info.baseToken;
             callbackData.debtAmount = debtAmount;
             callbackData.debtTokenOutAmount = baseTokenOutAmount;
-
             bytes memory data = abi.encode(callbackData);
             IUniswapV2Pair(info.lowerPool).swap(amount0Out, amount1Out, address(this), data);
         }
-
         uint256 balanceAfter = IERC20(info.baseToken).balanceOf(address(this));
         require(balanceAfter > balanceBefore, 'Losing money');
-
         if (info.baseToken == WETH) {
             IWETH(info.baseToken).withdraw(balanceAfter);
         }
         permissionedPairAddress = address(1);
     }
 
-    function uniswapV2Call(
-        address sender,
-        uint256 amount0,
-        uint256 amount1,
-        bytes memory data
-    ) public {
+    function uniswapV2Call(address sender, uint256 amount0, uint256 amount1, bytes memory data) public {
         // access control
         require(msg.sender == permissionedPairAddress, 'Non permissioned address call');
         require(sender == address(this), 'Not from this contract');
-
         uint256 borrowedAmount = amount0 > 0 ? amount0 : amount1;
         CallbackData memory info = abi.decode(data, (CallbackData));
-
         IERC20(info.borrowedToken).safeTransfer(info.targetPool, borrowedAmount);
-
         (uint256 amount0Out, uint256 amount1Out) =
-            info.debtTokenSmaller ? (info.debtTokenOutAmount, uint256(0)) : (uint256(0), info.debtTokenOutAmount);
+        info.debtTokenSmaller ? (info.debtTokenOutAmount, uint256(0)) : (uint256(0), info.debtTokenOutAmount);
         IUniswapV2Pair(info.targetPool).swap(amount0Out, amount1Out, address(this), new bytes(0));
-
         IERC20(info.debtToken).safeTransfer(info.debtPool, info.debtAmount);
     }
 
     /// @notice Calculate how much profit we can by arbitraging between two pools
-    function getProfit(address pool0, address pool1) external view returns (uint256 profit, address baseToken) {
+    function getProfit(address pool0, address pool1) external view returns(uint256 profit, address baseToken) {
         (bool baseTokenSmaller, , ) = isbaseTokenSmaller(pool0, pool1);
         baseToken = baseTokenSmaller ? IUniswapV2Pair(pool0).token0() : IUniswapV2Pair(pool0).token1();
-
         (, , OrderedReserves memory orderedReserves) = getOrderedReserves(pool0, pool1, baseTokenSmaller);
-
         uint256 borrowAmount = calcBorrowAmount(orderedReserves);
         // borrow quote token on lower price pool,
         uint256 debtAmount = getAmountIn(borrowAmount, orderedReserves.a1, orderedReserves.b1);
@@ -266,18 +609,16 @@ contract FlashBot is Ownable {
     }
 
     /// @dev calculate the maximum base asset amount to borrow in order to get maximum profit during arbitrage
-    function calcBorrowAmount(OrderedReserves memory reserves) internal pure returns (uint256 amount) {
+    function calcBorrowAmount(OrderedReserves memory reserves) internal pure returns(uint256 amount) {
         // we can't use a1,b1,a2,b2 directly, because it will result overflow/underflow on the intermediate result
         // so we:
         //    1. divide all the numbers by d to prevent from overflow/underflow
         //    2. calculate the result by using above numbers
         //    3. multiply d with the result to get the final result
         // Note: this workaround is only suitable for ERC20 token with 18 decimals, which I believe most tokens do
-
         uint256 min1 = reserves.a1 < reserves.b1 ? reserves.a1 : reserves.b1;
         uint256 min2 = reserves.a2 < reserves.b2 ? reserves.a2 : reserves.b2;
         uint256 min = min1 < min2 ? min1 : min2;
-
         // choose appropriate number to divide based on the minimum number
         uint256 d;
         if (min > 1e24) {
@@ -305,7 +646,7 @@ contract FlashBot is Ownable {
         }
 
         (int256 a1, int256 a2, int256 b1, int256 b2) =
-            (int256(reserves.a1 / d), int256(reserves.a2 / d), int256(reserves.b1 / d), int256(reserves.b2 / d));
+        (int256(reserves.a1 / d), int256(reserves.a2 / d), int256(reserves.b1 / d), int256(reserves.b2 / d));
 
         int256 a = a1 * b1 - a2 * b2;
         int256 b = 2 * b1 * b2 * (a1 + a2);
@@ -319,30 +660,23 @@ contract FlashBot is Ownable {
     }
 
     /// @dev find solution of quadratic equation: ax^2 + bx + c = 0, only return the positive solution
-    function calcSolutionForQuadratic(
-        int256 a,
-        int256 b,
-        int256 c
-    ) internal pure returns (int256 x1, int256 x2) {
-        int256 m = b**2 - 4 * a * c;
+    function calcSolutionForQuadratic(int256 a, int256 b, int256 c) internal pure returns(int256 x1, int256 x2) {
+        int256 m = b ** 2 - 4 * a * c;
         // m < 0 leads to complex number
         require(m > 0, 'Complex number');
-
         int256 sqrtM = int256(sqrt(uint256(m)));
         x1 = (-b + sqrtM) / (2 * a);
         x2 = (-b - sqrtM) / (2 * a);
     }
 
     /// @dev Newton’s method for caculating square root of n
-    function sqrt(uint256 n) internal pure returns (uint256 res) {
+    function sqrt(uint256 n) internal pure returns(uint256 res) {
         assert(n > 1);
-
         // The scale factor is a crude way to turn everything into integer calcs.
         // Actually do (n * 10 ^ 4) ^ (1/2)
-        uint256 _n = n * 10**6;
+        uint256 _n = n * 10 ** 6;
         uint256 c = _n;
         res = _n;
-
         uint256 xi;
         while (true) {
             xi = (res + c / res) / 2;
@@ -352,16 +686,12 @@ contract FlashBot is Ownable {
             }
             res = xi;
         }
-        res = res / 10**3;
+        res = res / 10 ** 3;
     }
 
     // copy from UniswapV2Library
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
-    function getAmountIn(
-        uint256 amountOut,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) internal pure returns (uint256 amountIn) {
+    function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut) internal pure returns(uint256 amountIn) {
         require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         uint256 numerator = reserveIn.mul(amountOut).mul(1000);
@@ -371,11 +701,7 @@ contract FlashBot is Ownable {
 
     // copy from UniswapV2Library
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
-    function getAmountOut(
-        uint256 amountIn,
-        uint256 reserveIn,
-        uint256 reserveOut
-    ) internal pure returns (uint256 amountOut) {
+    function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) internal pure returns(uint256 amountOut) {
         require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
         require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
         uint256 amountInWithFee = amountIn.mul(997);
@@ -383,500 +709,26 @@ contract FlashBot is Ownable {
         uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
         amountOut = numerator / denominator;
     }
+
 }
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
 
 
-
-import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/presets/ERC20PresetMinterPauser.sol";
-
-contract TestERC20 is ERC20PresetMinterPauser {
-    constructor(string memory name, string memory symbol) ERC20PresetMinterPauser(name, symbol) {}
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-
+// File: contracts\open-zeppelin-contracts\InternalFuncTest.sol
 
 contract InternalFuncTest is FlashBot {
+
     constructor() FlashBot(address(1)) {}
 
-    function _calcBorrowAmount(OrderedReserves memory reserves) public pure returns (uint256) {
+    function _calcBorrowAmount(OrderedReserves memory reserves) public pure returns(uint256) {
         return calcBorrowAmount(reserves);
     }
 
-    function _calcSolutionForQuadratic(
-        int256 a,
-        int256 b,
-        int256 c
-    ) public pure returns (int256, int256) {
+    function _calcSolutionForQuadratic(int256 a, int256 b, int256 c) public pure returns(int256, int256) {
         return calcSolutionForQuadratic(a, b, c);
     }
 
-    function _sqrt(uint256 n) public pure returns (uint256) {
+    function _sqrt(uint256 n) public pure returns(uint256) {
         return sqrt(n);
     }
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
 
-
-
-/**
- * @dev Wrappers over Solidity's arithmetic operations with added overflow
- * checks.
- *
- * Arithmetic operations in Solidity wrap on overflow. This can easily result
- * in bugs, because programmers usually assume that an overflow raises an
- * error, which is the standard behavior in high level programming languages.
- * `SafeMath` restores this intuition by reverting the transaction when an
- * operation overflows.
- *
- * Using this library instead of the unchecked operations eliminates an entire
- * class of bugs, so it's recommended to use it always.
- */
-library SafeMathCopy { // To avoid namespace collision between openzeppelin safemath and uniswap safemath
-    /**
-     * @dev Returns the addition of two unsigned integers, reverting on
-     * overflow.
-     *
-     * Counterpart to Solidity's `+` operator.
-     *
-     * Requirements:
-     *
-     * - Addition cannot overflow.
-     */
-    function add(uint256 a, uint256 b) internal pure returns (uint256) {
-        uint256 c = a + b;
-        require(c >= a, "SafeMath: addition overflow");
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the subtraction of two unsigned integers, reverting on
-     * overflow (when the result is negative).
-     *
-     * Counterpart to Solidity's `-` operator.
-     *
-     * Requirements:
-     *
-     * - Subtraction cannot overflow.
-     */
-    function sub(uint256 a, uint256 b) internal pure returns (uint256) {
-        return sub(a, b, "SafeMath: subtraction overflow");
-    }
-
-    /**
-     * @dev Returns the subtraction of two unsigned integers, reverting with custom message on
-     * overflow (when the result is negative).
-     *
-     * Counterpart to Solidity's `-` operator.
-     *
-     * Requirements:
-     *
-     * - Subtraction cannot overflow.
-     */
-    function sub(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b <= a, errorMessage);
-        uint256 c = a - b;
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the multiplication of two unsigned integers, reverting on
-     * overflow.
-     *
-     * Counterpart to Solidity's `*` operator.
-     *
-     * Requirements:
-     *
-     * - Multiplication cannot overflow.
-     */
-    function mul(uint256 a, uint256 b) internal pure returns (uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
-        // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
-        if (a == 0) {
-            return 0;
-        }
-
-        uint256 c = a * b;
-        require(c / a == b, "SafeMath: multiplication overflow");
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the integer division of two unsigned integers. Reverts on
-     * division by zero. The result is rounded towards zero.
-     *
-     * Counterpart to Solidity's `/` operator. Note: this function uses a
-     * `revert` opcode (which leaves remaining gas untouched) while Solidity
-     * uses an invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function div(uint256 a, uint256 b) internal pure returns (uint256) {
-        return div(a, b, "SafeMath: division by zero");
-    }
-
-    /**
-     * @dev Returns the integer division of two unsigned integers. Reverts with custom message on
-     * division by zero. The result is rounded towards zero.
-     *
-     * Counterpart to Solidity's `/` operator. Note: this function uses a
-     * `revert` opcode (which leaves remaining gas untouched) while Solidity
-     * uses an invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function div(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b > 0, errorMessage);
-        uint256 c = a / b;
-        // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-
-        return c;
-    }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(uint256 a, uint256 b) internal pure returns (uint256) {
-        return mod(a, b, "SafeMath: modulo by zero");
-    }
-
-    /**
-     * @dev Returns the remainder of dividing two unsigned integers. (unsigned integer modulo),
-     * Reverts with custom message when dividing by zero.
-     *
-     * Counterpart to Solidity's `%` operator. This function uses a `revert`
-     * opcode (which leaves remaining gas untouched) while Solidity uses an
-     * invalid opcode to revert (consuming all remaining gas).
-     *
-     * Requirements:
-     *
-     * - The divisor cannot be zero.
-     */
-    function mod(uint256 a, uint256 b, string memory errorMessage) internal pure returns (uint256) {
-        require(b != 0, errorMessage);
-        return a % b;
-    }
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-
-// a library for performing overflow-safe math, courtesy of DappHub (https://github.com/dapphub/ds-math)
-
-library SafeMath {
-    function add(uint x, uint y) internal pure returns (uint z) {
-        require((z = x + y) >= x, 'ds-math-add-overflow');
-    }
-
-    function sub(uint x, uint y) internal pure returns (uint z) {
-        require((z = x - y) <= x, 'ds-math-sub-underflow');
-    }
-
-    function mul(uint x, uint y) internal pure returns (uint z) {
-        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
-    }
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-pragma experimental ABIEncoderV2;
-
-
-
-/**
- * @title Decimal
- * @author dYdX
- *
- * Library that defines a fixed-point number with 18 decimal places.
- */
-library Decimal {
-    using SafeMathCopy for uint256;
-
-    // ============ Constants ============
-
-    uint256 private constant BASE = 10**18;
-
-    // ============ Structs ============
-
-
-    struct D256 {
-        uint256 value;
-    }
-
-    // ============ Static Functions ============
-
-    function zero()
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: 0 });
-    }
-
-    function one()
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: BASE });
-    }
-
-    function from(
-        uint256 a
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: a.mul(BASE) });
-    }
-
-    function ratio(
-        uint256 a,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: getPartial(a, BASE, b) });
-    }
-
-    // ============ Self Functions ============
-
-    function add(
-        D256 memory self,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.add(b.mul(BASE)) });
-    }
-
-    function sub(
-        D256 memory self,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.sub(b.mul(BASE)) });
-    }
-
-    function sub(
-        D256 memory self,
-        uint256 b,
-        string memory reason
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.sub(b.mul(BASE), reason) });
-    }
-
-    function mul(
-        D256 memory self,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.mul(b) });
-    }
-
-    function div(
-        D256 memory self,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.div(b) });
-    }
-
-    function pow(
-        D256 memory self,
-        uint256 b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        if (b == 0) {
-            return from(1);
-        }
-
-        D256 memory temp = D256({ value: self.value });
-        for (uint256 i = 1; i < b; i++) {
-            temp = mul(temp, self);
-        }
-
-        return temp;
-    }
-
-    function add(
-        D256 memory self,
-        D256 memory b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.add(b.value) });
-    }
-
-    function sub(
-        D256 memory self,
-        D256 memory b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.sub(b.value) });
-    }
-
-    function sub(
-        D256 memory self,
-        D256 memory b,
-        string memory reason
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: self.value.sub(b.value, reason) });
-    }
-
-    function mul(
-        D256 memory self,
-        D256 memory b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: getPartial(self.value, b.value, BASE) });
-    }
-
-    function div(
-        D256 memory self,
-        D256 memory b
-    )
-    internal
-    pure
-    returns (D256 memory)
-    {
-        return D256({ value: getPartial(self.value, BASE, b.value) });
-    }
-
-    function equals(D256 memory self, D256 memory b) internal pure returns (bool) {
-        return self.value == b.value;
-    }
-
-    function greaterThan(D256 memory self, D256 memory b) internal pure returns (bool) {
-        return compareTo(self, b) == 2;
-    }
-
-    function lessThan(D256 memory self, D256 memory b) internal pure returns (bool) {
-        return compareTo(self, b) == 0;
-    }
-
-    function greaterThanOrEqualTo(D256 memory self, D256 memory b) internal pure returns (bool) {
-        return compareTo(self, b) > 0;
-    }
-
-    function lessThanOrEqualTo(D256 memory self, D256 memory b) internal pure returns (bool) {
-        return compareTo(self, b) < 2;
-    }
-
-    function isZero(D256 memory self) internal pure returns (bool) {
-        return self.value == 0;
-    }
-
-    function asUint256(D256 memory self) internal pure returns (uint256) {
-        return self.value.div(BASE);
-    }
-
-    // ============ Core Methods ============
-
-    function getPartial(
-        uint256 target,
-        uint256 numerator,
-        uint256 denominator
-    )
-    private
-    pure
-    returns (uint256)
-    {
-        return target.mul(numerator).div(denominator);
-    }
-
-    function compareTo(
-        D256 memory a,
-        D256 memory b
-    )
-    private
-    pure
-    returns (uint256)
-    {
-        if (a.value == b.value) {
-            return 1;
-        }
-        return a.value > b.value ? 2 : 0;
-    }
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-
-interface IWETH {
-    function deposit() external payable;
-    function transfer(address to, uint value) external returns (bool);
-    function withdraw(uint) external;
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-
-interface IUniswapV2Pair {
-    function factory() external view returns (address);
-    function token0() external view returns (address);
-    function token1() external view returns (address);
-    function getReserves() external view returns (uint112 reserve0, uint112 reserve1, uint32 blockTimestampLast);
-    function swap(uint256 amount0Out, uint256 amount1Out, address to, bytes calldata data) external;
-    function skim(address to) external;
-    function sync() external;
-}
-/**///////////*//**///////////*//**///////////*//**///////////*//**///////////*/
-
-
-
-interface IUniswapV2Callee {
-    function uniswapV2Call(address sender, uint256 amount0, uint256 amount1, bytes calldata data) external;
 }
