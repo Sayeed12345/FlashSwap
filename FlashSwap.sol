@@ -74,8 +74,8 @@ library SafeMathCopy { // To avoid namespace collision between openzeppelin safe
      * - Multiplication cannot overflow.
      */
     function mul(uint256 a, uint256 b) internal pure returns(uint256) {
-        // Gas optimization: this is cheaper than requiring 'a' not being zero, but the
-        // benefit is lost if 'b' is also tested.
+        // Gas optimization: this is cheaper than requiring "a" not being zero, but the
+        // benefit is lost if "b" is also tested.
         // See: https://github.com/OpenZeppelin/openzeppelin-contracts/pull/522
         if (a == 0) {
             return 0;
@@ -161,15 +161,15 @@ library SafeMathCopy { // To avoid namespace collision between openzeppelin safe
 library SafeMath {
 
     function add(uint x, uint y) internal pure returns(uint z) {
-        require((z = x + y) >= x, 'ds-math-add-overflow');
+        require((z = x + y) >= x, "ds-math-add-overflow");
     }
 
     function sub(uint x, uint y) internal pure returns(uint z) {
-        require((z = x - y) <= x, 'ds-math-sub-underflow');
+        require((z = x - y) <= x, "ds-math-sub-underflow");
     }
 
     function mul(uint x, uint y) internal pure returns(uint z) {
-        require(y == 0 || (z = x * y) / y == x, 'ds-math-mul-overflow');
+        require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
     }
 
 }
@@ -494,12 +494,12 @@ contract FlashBot is Ownable {
     }
 
     function isbaseTokenSmaller(address pool0, address pool1) internal view returns(bool baseSmaller, address baseToken, address quoteToken) {
-        require(pool0 != pool1, 'Same pair address');
+        require(pool0 != pool1, "Same pair address");
         (address pool0Token0, address pool0Token1) = (IUniswapV2Pair(pool0).token0(), IUniswapV2Pair(pool0).token1());
         (address pool1Token0, address pool1Token1) = (IUniswapV2Pair(pool1).token0(), IUniswapV2Pair(pool1).token1());
-        require(pool0Token0 < pool0Token1 && pool1Token0 < pool1Token1, 'Non standard uniswap AMM pair');
-        require(pool0Token0 == pool1Token0 && pool0Token1 == pool1Token1, 'Require same token pair');
-        require(baseTokensContains(pool0Token0) || baseTokensContains(pool0Token1), 'No base token in pair');
+        require(pool0Token0 < pool0Token1 && pool1Token0 < pool1Token1, "Non standard uniswap AMM pair");
+        require(pool0Token0 == pool1Token0 && pool0Token1 == pool1Token1, "Require same token pair");
+        require(baseTokensContains(pool0Token0) || baseTokensContains(pool0Token1), "No base token in pair");
         (baseSmaller, baseToken, quoteToken) = baseTokensContains(pool0Token0) ?
             (true, pool0Token0, pool0Token1) :
             (false, pool0Token1, pool0Token0);
@@ -533,8 +533,8 @@ contract FlashBot is Ownable {
                 (pool1Reserve0, pool1Reserve1, pool0Reserve0, pool0Reserve1) :
                 (pool1Reserve1, pool1Reserve0, pool0Reserve1, pool0Reserve0);
         }
-        console.log('Borrow from pool:', lowerPool);
-        console.log('Sell to pool:', higherPool);
+        console.log("Borrow from pool:", lowerPool);
+        console.log("Sell to pool:", higherPool);
     }
 
     /// @notice Do an arbitrage between two Uniswap-like AMM pools
@@ -556,8 +556,8 @@ contract FlashBot is Ownable {
             uint256 debtAmount = getAmountIn(borrowAmount, orderedReserves.a1, orderedReserves.b1);
             // sell borrowed quote token on higher price pool, calculate how much base token we can get
             uint256 baseTokenOutAmount = getAmountOut(borrowAmount, orderedReserves.b2, orderedReserves.a2);
-            require(baseTokenOutAmount > debtAmount, 'Arbitrage fail, no profit');
-            console.log('Profit:', (baseTokenOutAmount - debtAmount) / 1 ether);
+            require(baseTokenOutAmount > debtAmount, "Arbitrage fail, no profit");
+            console.log("Profit:", (baseTokenOutAmount - debtAmount) / 1 ether);
             // can only initialize this way to avoid stack too deep error
             CallbackData memory callbackData;
             callbackData.debtPool = info.lowerPool;
@@ -571,7 +571,7 @@ contract FlashBot is Ownable {
             IUniswapV2Pair(info.lowerPool).swap(amount0Out, amount1Out, address(this), data);
         }
         uint256 balanceAfter = IERC20(info.baseToken).balanceOf(address(this));
-        require(balanceAfter > balanceBefore, 'Losing money');
+        require(balanceAfter > balanceBefore, "Losing money");
         if (info.baseToken == WETH) {
             IWETH(info.baseToken).withdraw(balanceAfter);
         }
@@ -580,8 +580,8 @@ contract FlashBot is Ownable {
 
     function uniswapV2Call(address sender, uint256 amount0, uint256 amount1, bytes memory data) public {
         // access control
-        require(msg.sender == permissionedPairAddress, 'Non permissioned address call');
-        require(sender == address(this), 'Not from this contract');
+        require(msg.sender == permissionedPairAddress, "Non permissioned address call");
+        require(sender == address(this), "Not from this contract");
         uint256 borrowedAmount = amount0 > 0 ? amount0 : amount1;
         CallbackData memory info = abi.decode(data, (CallbackData));
         IERC20(info.borrowedToken).safeTransfer(info.targetPool, borrowedAmount);
@@ -655,7 +655,7 @@ contract FlashBot is Ownable {
         (int256 x1, int256 x2) = calcSolutionForQuadratic(a, b, c);
 
         // 0 < x < b1 and 0 < x < b2
-        require((x1 > 0 && x1 < b1 && x1 < b2) || (x2 > 0 && x2 < b1 && x2 < b2), 'Wrong input order');
+        require((x1 > 0 && x1 < b1 && x1 < b2) || (x2 > 0 && x2 < b1 && x2 < b2), "Wrong input order");
         amount = (x1 > 0 && x1 < b1 && x1 < b2) ? uint256(x1) * d : uint256(x2) * d;
     }
 
@@ -663,7 +663,7 @@ contract FlashBot is Ownable {
     function calcSolutionForQuadratic(int256 a, int256 b, int256 c) internal pure returns(int256 x1, int256 x2) {
         int256 m = b ** 2 - 4 * a * c;
         // m < 0 leads to complex number
-        require(m > 0, 'Complex number');
+        require(m > 0, "Complex number");
         int256 sqrtM = int256(sqrt(uint256(m)));
         x1 = (-b + sqrtM) / (2 * a);
         x2 = (-b - sqrtM) / (2 * a);
@@ -692,8 +692,8 @@ contract FlashBot is Ownable {
     // copy from UniswapV2Library
     // given an output amount of an asset and pair reserves, returns a required input amount of the other asset
     function getAmountIn(uint256 amountOut, uint256 reserveIn, uint256 reserveOut) internal pure returns(uint256 amountIn) {
-        require(amountOut > 0, 'UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        require(amountOut > 0, "UniswapV2Library: INSUFFICIENT_OUTPUT_AMOUNT");
+        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         uint256 numerator = reserveIn.mul(amountOut).mul(1000);
         uint256 denominator = reserveOut.sub(amountOut).mul(997);
         amountIn = (numerator / denominator).add(1);
@@ -702,8 +702,8 @@ contract FlashBot is Ownable {
     // copy from UniswapV2Library
     // given an input amount of an asset and pair reserves, returns the maximum output amount of the other asset
     function getAmountOut(uint256 amountIn, uint256 reserveIn, uint256 reserveOut) internal pure returns(uint256 amountOut) {
-        require(amountIn > 0, 'UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT');
-        require(reserveIn > 0 && reserveOut > 0, 'UniswapV2Library: INSUFFICIENT_LIQUIDITY');
+        require(amountIn > 0, "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT");
+        require(reserveIn > 0 && reserveOut > 0, "UniswapV2Library: INSUFFICIENT_LIQUIDITY");
         uint256 amountInWithFee = amountIn.mul(997);
         uint256 numerator = amountInWithFee.mul(reserveOut);
         uint256 denominator = reserveIn.mul(1000).add(amountInWithFee);
