@@ -500,9 +500,7 @@ contract FlashBot is Ownable {
         require(pool0Token0 < pool0Token1 && pool1Token0 < pool1Token1, "Non standard uniswap AMM pair");
         require(pool0Token0 == pool1Token0 && pool0Token1 == pool1Token1, "Require same token pair");
         require(baseTokensContains(pool0Token0) || baseTokensContains(pool0Token1), "No base token in pair");
-        (baseSmaller, baseToken, quoteToken) = baseTokensContains(pool0Token0) ?
-            (true, pool0Token0, pool0Token1) :
-            (false, pool0Token1, pool0Token0);
+        (baseSmaller, baseToken, quoteToken) = baseTokensContains(pool0Token0) ? (true, pool0Token0, pool0Token1) : (false, pool0Token1, pool0Token0);
     }
 
     /// @dev Compare price denominated in quote token between two pools
