@@ -548,8 +548,7 @@ contract FlashBot is Ownable {
         // avoid stack too deep error
         {
             uint256 borrowAmount = calcBorrowAmount(orderedReserves);
-            (uint256 amount0Out, uint256 amount1Out) =
-            info.baseTokenSmaller ? (uint256(0), borrowAmount) : (borrowAmount, uint256(0));
+            (uint256 amount0Out, uint256 amount1Out) = info.baseTokenSmaller ? (uint256(0), borrowAmount) : (borrowAmount, uint256(0));
             // borrow quote token on lower price pool, calculate how much debt we need to pay demoninated in base token
             uint256 debtAmount = getAmountIn(borrowAmount, orderedReserves.a1, orderedReserves.b1);
             // sell borrowed quote token on higher price pool, calculate how much base token we can get
